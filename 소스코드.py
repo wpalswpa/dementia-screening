@@ -1,4 +1,4 @@
-"""
+﻿"""
 ================================================================================
  치매 위험 조기 스크리닝 — 전체 분석 파이프라인
  팀명: 찾아조 (치매 위험 조기 스크리닝 서비스)
@@ -13,15 +13,15 @@ AI Hub "치매 고위험군 웨어러블 라이프로그" 데이터(174명 — �
          믿을 수 없는 날을 제외한다.
   2단계) 피처 생성 — 사람마다 "평소 수준(평균)"과 "날마다의 들쭉날쭉함(표준편차)"을
          계산해 한 사람당 한 줄짜리 피처 테이블(44개 피처)을 만든다.
-  3단계) 탐색 분석(EDA) — 진단군(CN/MCI/Dem)별로 활동량·수면효율·MMSE 평균을 비교한다.
-  4단계) 핵심 모델(Q3·Q4) — 정상군 vs 위험군(경도인지장애+치매)을 구분하는 모델을
+  3단계) 탐색 분석(EDA, Q1) — 진단군(CN/MCI/Dem)별로 활동량·수면효율·MMSE 평균을 비교한다.
+  4단계) 핵심 모델(Q2·Q3) — 정상군 vs 위험군(경도인지장애+치매)을 구분하는 모델을
          학습하고, 반복 교차검증으로 정직하게 성능을 재고, 어떤 피처가 왜 중요한지 확인한다.
-  5단계) Q5 검증 — "④번 결과가 사실은 이미 뚜렷한 치매 12명 덕분 아닌가?"라는 의심을
+  5단계) Q4 검증 — "④번 결과가 사실은 이미 뚜렷한 치매 12명 덕분 아닌가?"라는 의심을
          풀기 위해, 치매를 완전히 빼고 정상군 vs 경도인지장애만으로 같은 방식을 재검증한다.
-  6단계) Q6 검증 — "④번 성능 개선이 우연 아닌가?"를 확인하기 위해, 라벨을 무작위로
+  6단계) Q5 검증 — "④번 성능 개선이 우연 아닌가?"를 확인하기 위해, 라벨을 무작위로
          섞은 가짜 데이터 500벌과 비교하는 순열 검정(Permutation Test)을 수행한다.
 
-이 파일 하나로 전체 분석 절차(Q1~Q6)를 처음부터 끝까지 재현할 수 있다. 원본 프로젝트
+이 파일 하나로 전체 분석 절차(Q1~Q5)를 처음부터 끝까지 재현할 수 있다. 원본 프로젝트
 저장소에서는 이 단계들이 preprocessing/·model/ 폴더 아래 독립 스크립트로 나뉘어 있는데,
 제출용으로 하나로 합치면서 각 단계가 "왜 그렇게 했는지"를 주석으로 자세히 남겼다.
 
@@ -260,7 +260,7 @@ def eda_summary(table):
 
 
 # ==============================================================================
-# 4단계. 핵심 모델(Q3·Q4) — 정상군 vs 위험군(CN vs CI) 스크리닝
+# 4단계. 핵심 모델(Q2·Q3) — 정상군 vs 위험군(CN vs CI) 스크리닝
 # ==============================================================================
 #
 # 절차 (fold 50개 = 5조각 x 10회 반복, 매번 동일):
@@ -306,7 +306,7 @@ def train_screening_model(table):
     반환: (평가 결과 DataFrame, 최종 선택된 상위 10개 피처 리스트)
     """
     print("\n" + "=" * 70)
-    print("4단계. 핵심 모델(Q3·Q4) — CN vs CI 스크리닝")
+    print("4단계. 핵심 모델(Q2·Q3) — CN vs CI 스크리닝")
     print("=" * 70)
 
     feature_cols = [c for c in table.columns if c not in NON_FEATURE_COLS]
@@ -388,7 +388,7 @@ def train_screening_model(table):
 
 
 # ==============================================================================
-# 5단계. Q5 검증 — 치매를 빼도 신호가 남는가 (CN vs MCI 단독, Nested CV)
+# 5단계. Q4 검증 — 치매를 빼도 신호가 남는가 (CN vs MCI 단독, Nested CV)
 # ==============================================================================
 #
 # 왜 필요한가: 4단계 결과가 사실은 "이미 증상이 뚜렷한 치매 12명"의 극단적 차이
@@ -428,12 +428,12 @@ def _inner_select_features(X_train, y_train, k_candidates, n_inner_splits=4):
 
 def verify_cn_vs_mci(table):
     """
-    5단계(Q5): 치매를 제외한 CN vs MCI만으로 재검증한다.
+    5단계(Q4): 치매를 제외한 CN vs MCI만으로 재검증한다.
 
     출력: reports/model_metrics_cn_vs_mci.json
     """
     print("\n" + "=" * 70)
-    print("5단계. Q5 검증 — 치매 제외, CN vs MCI 단독 재검증 (Nested CV)")
+    print("5단계. Q4 검증 — 치매 제외, CN vs MCI 단독 재검증 (Nested CV)")
     print("=" * 70)
 
     df = table[table["DIAG_NM"] != "Dem"].copy()  # 치매 완전 제외
@@ -479,7 +479,7 @@ def verify_cn_vs_mci(table):
 
 
 # ==============================================================================
-# 6단계. Q6 검증 — 이 결과가 우연이 아닌지 통계로 확인 (Permutation Test)
+# 6단계. Q5 검증 — 이 결과가 우연이 아닌지 통계로 확인 (Permutation Test)
 # ==============================================================================
 #
 # 방법: 라벨(누가 위험군인지)을 무작위로 뒤섞은 가짜 데이터에 똑같은 파이프라인을
@@ -503,14 +503,14 @@ def _mean_cv_score(X, y, n_repeats, seed):
 
 def permutation_test(table, selected_features, n_permutations=500, n_repeats_per_permutation=3):
     """
-    6단계(Q6): 4단계에서 확정된 상위 10개 피처로, 실제 라벨 성능과
+    6단계(Q5): 4단계에서 확정된 상위 10개 피처로, 실제 라벨 성능과
     500번의 "라벨 무작위 셔플" 성능을 비교해 p-value를 계산한다.
 
     출력: reports/permutation_test_result.json
           reports/figures/11_permutation_test.png
     """
     print("\n" + "=" * 70)
-    print("6단계. Q6 검증 — 순열 검정(Permutation Test)")
+    print("6단계. Q5 검증 — 순열 검정(Permutation Test)")
     print("=" * 70)
 
     X = table[selected_features]
@@ -570,10 +570,10 @@ def permutation_test(table, selected_features, n_permutations=500, n_repeats_per
 def main():
     daily = clean_lifelog()                              # 1단계
     table = build_features(daily)                         # 2단계
-    eda_summary(table)                                     # 3단계 (Q1, Q2)
-    _, top_features = train_screening_model(table)         # 4단계 (Q3, Q4)
-    verify_cn_vs_mci(table)                                 # 5단계 (Q5)
-    permutation_test(table, top_features)                   # 6단계 (Q6)
+    eda_summary(table)                                     # 3단계 (Q1)
+    _, top_features = train_screening_model(table)         # 4단계 (Q2, Q3)
+    verify_cn_vs_mci(table)                                 # 5단계 (Q4)
+    permutation_test(table, top_features)                   # 6단계 (Q5)
 
     print("\n" + "=" * 70)
     print("전체 파이프라인 완료. 결과는 reports/ 폴더를 확인하세요.")

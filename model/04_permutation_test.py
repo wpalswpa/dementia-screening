@@ -1,5 +1,5 @@
-"""
-Q6: CN vs CI(MCI+Dem) 결과가 우연이 아닌지 통계적으로 확인한다 (Permutation Test).
+﻿"""
+Q5: CN vs CI(MCI+Dem) 결과가 우연이 아닌지 통계적으로 확인한다 (Permutation Test).
 
 절차: 라벨(diag2class)을 무작위로 섞은 뒤, 이미 확정된 동일 피처 세트로 동일한
 반복교차검증을 돌려 "우연히 나올 수 있는 성능"의 분포를 만든다. 이걸 500번

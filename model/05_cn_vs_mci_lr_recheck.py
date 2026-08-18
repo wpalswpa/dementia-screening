@@ -1,6 +1,6 @@
-"""
-Q5 추가 확인: 주 모델(model/01)의 분류기를 RandomForest에서 LogisticRegression으로
-바꾼 뒤, "치매를 뺀 CN vs MCI에서는 신호가 없다"는 Q5 결론(model/02·03, RandomForest
+﻿"""
+Q4 추가 확인: 주 모델(model/01)의 분류기를 RandomForest에서 LogisticRegression으로
+바꾼 뒤, "치매를 뺀 CN vs MCI에서는 신호가 없다"는 Q4 결론(model/02·03, RandomForest
 기반 Nested CV)이 새 분류기에서도 그대로인지 재확인한다.
 
 프로토콜은 model/01과 완전히 동일하다(매 fold 학습 데이터로만 RandomForest 중요도
@@ -9,7 +9,7 @@ Q5 추가 확인: 주 모델(model/01)의 분류기를 RandomForest에서 Logist
 
 결과(실행 로그 및 reports/q5_lr_recheck.json):
   기본 44개 피처, 시계열 포함 50개 피처 모두 정확도가 베이스라인(68.5%)에 못 미치고
-  AUC도 0.52~0.54 수준 — 분류기를 바꿔도 Q5 결론(MCI 단독 조기 신호는 현재 피처로는
+  AUC도 0.52~0.54 수준 — 분류기를 바꿔도 Q4 결론(MCI 단독 조기 신호는 현재 피처로는
   못 찾음)은 그대로다.
 """
 import json

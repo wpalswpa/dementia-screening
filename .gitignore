@@ -1,0 +1,16 @@
+# ── AI Hub 원본 데이터 — 이용약관상 재배포 금지, 절대 커밋하지 말 것 ──
+raw_data/
+
+# 원본에서 파생된 개인 단위 데이터도 올리지 않는다 (참가자별 생활 기록 포함)
+data/processed/*.csv
+
+# 실행 환경/캐시
+venv/
+__pycache__/
+*.pyc
+service/service.log
+submission_output/
+
+# 임시 파일
+~$*
+*.tmp

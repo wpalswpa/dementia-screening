@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>치매 위험 조기 스크리닝 — 찾아조</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root { --blue:#4C72B0; --red:#C44E52; --green:#55A868; --gray:#666; }
+  * { box-sizing:border-box; }
+  body { font-family:"Malgun Gothic", sans-serif; max-width:760px; margin:0 auto; padding:24px 16px 60px; color:#222; }
+  h1 { font-size:1.5rem; } h2 { font-size:1.1rem; margin-top:28px; }
+  .card { border:1px solid #ddd; border-radius:10px; padding:18px; margin:14px 0; }
+  .muted { color:var(--gray); font-size:0.88rem; }
+  button { background:var(--blue); color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:1rem; cursor:pointer; }
+  button.secondary { background:#eee; color:#333; }
+  .result-title { font-size:1.15rem; font-weight:bold; }
+  .risk   { color:var(--red); }
+  .norisk { color:var(--green); }
+  .gauge { background:#eee; border-radius:8px; height:22px; margin:8px 0 2px; position:relative; }
+  .gauge .fill { height:100%; border-radius:8px 0 0 8px; background:linear-gradient(90deg, var(--green), #dfa93d, var(--red)); }
+  .gauge .threshold { position:absolute; left:50%; top:-4px; bottom:-4px; width:2px; background:#333; }
+  .gauge .threshold::after { content:"판정 기준 0.5"; position:absolute; top:-16px; left:-32px; font-size:0.7rem; color:#333; white-space:nowrap; }
+  .bar-row { display:flex; align-items:center; gap:8px; margin:6px 0; font-size:0.9rem; }
+  .bar-row .label { width:210px; }
+  .bar { background:#eee; border-radius:5px; height:14px; flex:1; position:relative; }
+  .bar > div { height:100%; border-radius:5px; }
+  .bar .user { background:var(--red); }
+  .bar .cn   { background:var(--blue); }
+  .reason-block { border:1px solid #eee; border-radius:8px; padding:10px 12px; margin:10px 0; border-left-width:6px; }
+  .reason-block.ok   { border-left-color:#55A868; background:#f6faf7; }
+  .reason-block.warn { border-left-color:#dfa93d; background:#fdfaf2; }
+  .reason-block.high { border-left-color:#C44E52; background:#fdf5f5; }
+  .sev { display:inline-block; border-radius:5px; font-size:0.78rem; padding:2px 8px; margin-left:8px; font-weight:bold; vertical-align:middle; }
+  .sev.ok   { background:#e7f3ea; color:#2e7d43; }
+  .sev.warn { background:#fdf1dc; color:#a4700d; }
+  .sev.high { background:#fdeaea; color:#b03030; }
+  .range-note { font-size:0.82rem; color:var(--gray); margin-top:4px; }
+  .summary-row { display:flex; gap:10px; flex-wrap:wrap; margin:6px 0 14px; }
+  .summary-card { flex:1; min-width:150px; background:#f7f9fc; border:1px solid #e3e9f2; border-radius:8px; padding:10px 12px; }
+  .summary-card .val { font-size:1.25rem; font-weight:bold; color:var(--blue); }
+  .summary-card .cmp { font-size:0.78rem; color:var(--gray); }
+  .chart-title { font-size:0.9rem; margin:14px 0 2px; color:#333; }
+  svg.chart text { font-family:"Malgun Gothic", sans-serif; }
+  .legend { font-size:0.82rem; color:var(--gray); margin:4px 0 10px; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:middle; }
+  svg.chart { width:100%; height:120px; }
+  .disclaimer { background:#fff6e6; border:1px solid #eed9a8; border-radius:8px; padding:12px; font-size:0.86rem; margin-top:18px; }
+  .error { color:var(--red); font-weight:bold; }
+  #map { width:100%; height:320px; border-radius:8px; margin-top:10px; display:none; }
+  .center-item { border-bottom:1px solid #eee; padding:10px 2px; font-size:0.92rem; }
+  .center-item:last-child { border-bottom:none; }
+  .center-item b { color:var(--blue); }
+  .center-search { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+  .center-search input[type=text] { padding:9px 10px; border:1px solid #ccc; border-radius:8px; font-size:0.95rem; width:160px; }
+  .badge { display:inline-block; background:#eef3fb; color:var(--blue); border-radius:5px; font-size:0.76rem; padding:2px 7px; margin-left:6px; vertical-align:middle; }
+</style>
+</head>
+<body>
+
+<h1>치매 위험 조기 스크리닝 <span class="muted">— 찾아조</span></h1>
+<p class="muted">웨어러블 기기(반지형)의 활동·수면 기록만으로 위험 신호를 확인하는 <b>참고용</b> 서비스입니다.
+병원 검사를 대체하지 않으며, "병원에 가볼 이유가 있는지"를 먼저 짚어주는 역할까지만 합니다.</p>
+
+<div class="card">
+  <h2 style="margin-top:0">1. 생활 기록 업로드</h2>
+  <p class="muted">웨어러블 기기에서 내보낸 일 단위 기록 CSV를 올려주세요. 결측 없는 기록이 <b>14일 이상</b> 필요합니다.</p>
+  <input type="file" id="file" accept=".csv">
+  <div style="margin-top:12px">
+    <button onclick="predict()">위험도 예측하기</button>
+    <button class="secondary" onclick="location.href='/sample.csv?kind=normal'">정상군 샘플 내려받기(시연용)</button>
+    <button class="secondary" onclick="location.href='/sample.csv?kind=risk'">위험군 샘플 내려받기(시연용)</button>
+  </div>
+  <p id="status" class="muted"></p>
+</div>
+
+<div id="result" style="display:none">
+  <div class="card">
+    <div class="result-title" id="result-title"></div>
+    <p class="muted" id="valid-days"></p>
+    <div class="gauge" style="margin-top:22px"><div class="fill" id="gauge-fill" style="width:0%"></div><div class="threshold"></div></div>
+    <p class="muted">위험 점수(참고용): <b id="score"></b> / 1.0 — 가운데 기준선(0.5)을 넘으면 위험군으로 추정합니다.</p>
+    <button class="secondary" onclick="downloadReport()" style="margin-top:6px">📄 결과 요약 저장 (.txt)</button>
+    <span class="muted" style="font-size:0.82rem"> — 가족·보호자와 공유하거나 병원 방문 시 지참용</span>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0" id="reasons-title">2. 판단의 주요 근거 <span class="muted">— 정상군 평균과 가장 크게 다른 지표 3가지</span></h2>
+    <div class="legend"><span class="dot" style="background:var(--red)"></span>나의 기록&nbsp;&nbsp;
+      <span class="dot" style="background:var(--blue)"></span>정상군 평균&nbsp;&nbsp;|&nbsp;&nbsp;판정:
+      <span class="sev ok">양호</span> <span class="sev warn">주의</span> <span class="sev high">위험 신호</span></div>
+    <div id="reasons"></div>
+    <p class="muted" id="criteria-note"></p>
+    <p class="muted">우리 분석에서는 활동량 자체보다 <b>활동·수면 패턴이 날마다 얼마나 들쭉날쭉한지(변동성)</b>가
+    위험군을 가르는 더 안정적인 신호였습니다.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">3. 내 기록 추이 <span class="muted">— 하루당 1개 값 (일 단위)</span></h2>
+    <div id="summary-cards" class="summary-row"></div>
+    <div class="legend"><span class="dot" style="background:var(--blue)"></span>내 기록&nbsp;&nbsp;
+      <span style="display:inline-block;width:22px;border-top:2px dashed var(--gray);vertical-align:middle;margin-right:4px"></span>정상군 평균</div>
+    <p class="chart-title">수면 효율 (%, 하루 중 실제로 잔 시간의 비율)</p>
+    <svg id="chart-sleep" class="chart" viewBox="0 0 700 120" preserveAspectRatio="none"></svg>
+    <p class="chart-title">총 활동 시간 (분/일)</p>
+    <svg id="chart-activity" class="chart" viewBox="0 0 700 120" preserveAspectRatio="none"></svg>
+    <div id="bedtime-section">
+      <p class="chart-title">취침·기상 시각 — 매일 <b>몇 시에</b> 자고 일어나는지
+        <span class="muted">(선이 위아래로 출렁일수록 수면 리듬이 불규칙)</span></p>
+      <div class="legend"><span class="dot" style="background:var(--red)"></span>취침 시각&nbsp;&nbsp;
+        <span class="dot" style="background:var(--green)"></span>기상 시각</div>
+      <svg id="chart-bedtime" class="chart" viewBox="0 0 700 120" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+
+  <div class="card" id="center-card">
+    <h2 style="margin-top:0">4. 전문기관 안내 <span class="badge">공공데이터포털 연동 · 전국 317곳</span></h2>
+    <p id="center-note"></p>
+    <p><b id="center-call"></b></p>
+    <p><a id="center-link" href="https://www.nid.or.kr/support/hi_list.aspx" target="_blank" rel="noopener">치매안심센터 전체 목록 보기 (중앙치매센터 공식 사이트) →</a></p>
+    <div class="center-search">
+      <button onclick="findCentersByGeo()">📍 내 위치에서 가까운 센터 찾기</button>
+      <input type="text" id="region-input" placeholder="또는 지역명 (예: 서울, 광주)">
+      <button class="secondary" onclick="findCentersByRegion()">지역으로 검색</button>
+    </div>
+    <p id="center-status" class="muted"></p>
+    <div id="map"></div>
+    <div id="center-list"></div>
+    <p class="muted">출처: 공공데이터포털 「전국치매센터표준데이터」 — 위 검색은 서버에 저장된 최신 연동 데이터 기준입니다.</p>
+  </div>
+
+  <div class="disclaimer" id="disclaimer"></div>
+</div>
+
+<script>
+async function predict() {
+  const f = document.getElementById("file").files[0];
+  const status = document.getElementById("status");
+  if (!f) { status.innerHTML = '<span class="error">CSV 파일을 먼저 선택해주세요.</span>'; return; }
+  status.textContent = "분석 중...";
+  const form = new FormData();
+  form.append("file", f);
+  try {
+    const res = await fetch("/predict", { method: "POST", body: form });
+    const data = await res.json();
+    if (!res.ok) { status.innerHTML = '<span class="error">' + (data.detail || "오류가 발생했습니다.") + "</span>"; return; }
+    status.textContent = "";
+    render(data);
+  } catch (e) {
+    status.innerHTML = '<span class="error">서버에 연결할 수 없습니다.</span>';
+  }
+}
+
+function render(d) {
+  lastResult = d;
+  document.getElementById("result").style.display = "block";
+  const isRisk = d.risk_score >= 0.5;
+  const title = document.getElementById("result-title");
+  title.textContent = "스크리닝 결과: " + d.screening_result;
+  title.className = "result-title " + (isRisk ? "risk" : "norisk");
+  document.getElementById("valid-days").textContent = "유효 기록 " + d.valid_days + "일 기준";
+  document.getElementById("gauge-fill").style.width = (d.risk_score * 100) + "%";
+  document.getElementById("score").textContent = d.risk_score;
+
+  // 배지는 "정상군과 얼마나 다른가"를 뜻한다(다르다 = 나쁘다가 아님).
+  // 위험군 판정이 아닐 때는 제목을 "참고용 비교"로 바꿔 오해를 막는다.
+  document.getElementById("reasons-title").innerHTML = isRisk
+    ? '2. 판단의 주요 근거 <span class="muted">— 정상군 평균과 가장 크게 다른 지표 3가지</span>'
+    : '2. 내 생활 패턴 비교 (참고용) <span class="muted">— 위험군 판정은 아니지만, 정상군 평균과 가장 다른 지표 3가지</span>';
+
+  // 근거 비교 — 지표마다 단위가 달라서, 값이 큰 쪽을 100%로 놓고 상대 비교한다.
+  // 판정 배지(정상군 범위 안/벗어남/크게 벗어남)와 정상군 범위를 함께 보여준다.
+  const box = document.getElementById("reasons");
+  box.innerHTML = "";
+  d.reasons.forEach(r => {
+    const max = Math.max(Math.abs(r.user_value), Math.abs(r.cn_average), Math.abs(r.cn_range[1])) || 1;
+    box.insertAdjacentHTML("beforeend", `
+      <div class="reason-block ${r.verdict_level}">
+        <div><b>${r.indicator}</b> <span class="muted">— 정상군 평균보다 ${r.direction}</span>
+          <span class="sev ${r.verdict_level}">${r.verdict}</span></div>
+        <div class="bar-row"><div class="label">나의 기록</div>
+          <div class="bar"><div class="user" style="width:${Math.abs(r.user_value)/max*100}%"></div></div>
+          <span><b>${r.user_value}</b>${r.unit}</span></div>
+        <div class="bar-row"><div class="label muted">정상군 평균</div>
+          <div class="bar"><div class="cn" style="width:${Math.abs(r.cn_average)/max*100}%"></div></div>
+          <span class="muted">${r.cn_average}${r.unit}</span></div>
+        <div class="range-note">정상군 범위(3명 중 2명이 드는 구간): <b>${r.cn_range[0]} ~ ${r.cn_range[1]}${r.unit}</b></div>
+      </div>`);
+  });
+  document.getElementById("criteria-note").textContent = d.criteria_note || "";
+
+  // 요약 카드 — 내 평균 vs 정상군 평균
+  const sm = d.summary, ref = sm.cn_reference || {};
+  const cards = [
+    { label: "유효 기록", val: d.valid_days + "일", cmp: "일 단위 기록 기준" },
+    { label: "평균 수면 효율", val: sm.avg_sleep_efficiency + "%", cmp: "정상군 평균 " + ref.sleep_efficiency + "%" },
+    { label: "하루 평균 활동", val: sm.avg_activity_total + "분", cmp: "정상군 평균 " + ref.activity_total + "분" },
+  ];
+  if (sm.avg_steps !== null && ref.steps) cards.push(
+    { label: "하루 평균 걸음", val: Number(sm.avg_steps).toLocaleString() + "걸음", cmp: "정상군 평균 " + Number(ref.steps).toLocaleString() + "걸음" });
+  document.getElementById("summary-cards").innerHTML = cards.map(c =>
+    `<div class="summary-card"><div class="muted">${c.label}</div><div class="val">${c.val}</div><div class="cmp">${c.cmp}</div></div>`).join("");
+
+  const dates = d.daily_series.dates;
+  drawLine("chart-sleep", d.daily_series.sleep_efficiency, "#4C72B0",
+           { unit: "%", refValue: ref.sleep_efficiency, dates: dates });
+  drawLine("chart-activity", d.daily_series.activity_total, "#4C72B0",
+           { unit: "분", refValue: ref.activity_total, dates: dates });
+
+  // 취침·기상 시각 차트 — 데이터에 시각 컬럼이 있을 때만 표시
+  const bt = d.daily_series.bedtime_hour, wk = d.daily_series.wake_hour;
+  if (bt && wk && bt.some(v => v !== null)) {
+    document.getElementById("bedtime-section").style.display = "block";
+    drawBedtimeChart("chart-bedtime", bt, wk, dates);
+  } else {
+    document.getElementById("bedtime-section").style.display = "none";
+  }
+
+  document.getElementById("center-note").textContent = d.center_guide.note;
+  document.getElementById("center-call").textContent = d.center_guide.call_center;
+  if (d.center_guide.find_center_url) document.getElementById("center-link").href = d.center_guide.find_center_url;
+  document.getElementById("disclaimer").textContent = "⚠ " + d.disclaimer;
+}
+
+// ── 결과 요약 저장 — 가족 공유·병원 지참용 텍스트 파일 ────────────────
+let lastResult = null;
+
+function downloadReport() {
+  if (!lastResult) return;
+  const d = lastResult;
+  const lines = [
+    "치매 위험 조기 스크리닝 결과 요약 (참고용)",
+    "생성일: " + new Date().toLocaleString("ko-KR"),
+    "",
+    "판정: " + d.screening_result,
+    "위험 점수: " + d.risk_score + " / 1.0 (기준 " + d.risk_threshold + " 이상이면 위험군 추정)",
+    "유효 기록: " + d.valid_days + "일",
+    "",
+    "[내 평균 vs 정상군 평균]",
+    "· 수면 효율: " + d.summary.avg_sleep_efficiency + "% (정상군 " + d.summary.cn_reference.sleep_efficiency + "%)",
+    "· 하루 활동 시간: " + d.summary.avg_activity_total + "분 (정상군 " + d.summary.cn_reference.activity_total + "분)",
+    "",
+    "[정상군과 가장 크게 다른 지표]",
+    ...d.reasons.map(r => "· " + r.indicator + ": " + r.user_value + r.unit +
+        " (정상군 범위 " + r.cn_range[0] + "~" + r.cn_range[1] + r.unit + ") → [" + r.verdict + "] " + r.detail),
+    "",
+    "[안내]",
+    "· " + d.center_guide.note,
+    "· " + d.center_guide.call_center,
+    "",
+    "※ " + d.disclaimer,
+  ];
+  const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "스크리닝_결과요약.txt";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── 치매안심센터 찾기 (공공데이터포털 연동 데이터) ─────────────────────
+let mapObj = null, mapLayer = null;
+
+function findCentersByGeo() {
+  const status = document.getElementById("center-status");
+  if (!navigator.geolocation) {
+    status.innerHTML = '<span class="error">이 브라우저는 위치 기능을 지원하지 않습니다. 지역명으로 검색해주세요.</span>';
+    return;
+  }
+  status.textContent = "내 위치를 확인하는 중...";
+  navigator.geolocation.getCurrentPosition(
+    pos => fetchCenters("/centers?lat=" + pos.coords.latitude + "&lon=" + pos.coords.longitude + "&limit=5",
+                        { lat: pos.coords.latitude, lon: pos.coords.longitude }),
+    () => { status.innerHTML = '<span class="error">위치 권한이 거부되었습니다. 지역명으로 검색해주세요.</span>'; }
+  );
+}
+
+function findCentersByRegion() {
+  const region = document.getElementById("region-input").value.trim();
+  const status = document.getElementById("center-status");
+  if (!region) { status.innerHTML = '<span class="error">지역명을 입력해주세요. (예: 서울, 광주, 경남)</span>'; return; }
+  fetchCenters("/centers?region=" + encodeURIComponent(region) + "&limit=5", null);
+}
+
+async function fetchCenters(url, userPos) {
+  const status = document.getElementById("center-status");
+  status.textContent = "센터를 찾는 중...";
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) { status.innerHTML = '<span class="error">' + (data.detail || "검색 실패") + "</span>"; return; }
+    status.textContent = "전국 " + data.total_centers + "곳 중 " + data.results.length + "곳:";
+    renderCenterList(data.results);
+    renderCenterMap(data.results, userPos);
+  } catch (e) {
+    status.innerHTML = '<span class="error">서버에 연결할 수 없습니다.</span>';
+  }
+}
+
+function renderCenterList(results) {
+  const box = document.getElementById("center-list");
+  box.innerHTML = "";
+  results.forEach(c => {
+    box.insertAdjacentHTML("beforeend", `
+      <div class="center-item">
+        <b>${c.name}</b> <span class="muted">(${c.type})</span>
+        ${c.distance_km !== null ? '<span class="badge">' + c.distance_km + 'km</span>' : ''}<br>
+        ${c.address || ''} ${c.phone ? ' · ☎ ' + c.phone : ''}
+      </div>`);
+  });
+}
+
+function renderCenterMap(results, userPos) {
+  const mapDiv = document.getElementById("map");
+  // 오프라인 등으로 Leaflet(지도 라이브러리)이 없으면 지도는 건너뛰고 목록만 보여준다.
+  if (typeof L === "undefined" || !results.length) { mapDiv.style.display = "none"; return; }
+  mapDiv.style.display = "block";
+
+  if (!mapObj) {
+    mapObj = L.map("map");
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                { attribution: "© OpenStreetMap" }).addTo(mapObj);
+  }
+  if (mapLayer) { mapLayer.remove(); }
+  mapLayer = L.layerGroup().addTo(mapObj);
+
+  const points = [];
+  results.forEach(c => {
+    L.marker([c.lat, c.lon]).addTo(mapLayer)
+      .bindPopup("<b>" + c.name + "</b><br>" + (c.address || "") + (c.phone ? "<br>☎ " + c.phone : ""));
+    points.push([c.lat, c.lon]);
+  });
+  if (userPos) {
+    L.circleMarker([userPos.lat, userPos.lon], { radius: 8, color: "#C44E52", fillOpacity: 0.9 })
+      .addTo(mapLayer).bindPopup("내 위치");
+    points.push([userPos.lat, userPos.lon]);
+  }
+  mapObj.fitBounds(points, { padding: [30, 30] });
+  setTimeout(() => mapObj.invalidateSize(), 100);  // display:none에서 켜진 직후 크기 재계산
+}
+
+// ── 추이 그래프 (외부 라이브러리 없이 SVG로 직접 그림) ──────────────
+// 그리는 영역: x 55~695, y 10~85 (아래 20px는 날짜 라벨, 왼쪽 50px은 값 라벨)
+const CH = { x0: 55, x1: 695, y0: 10, y1: 85 };
+
+function xyPoints(values, min, span) {
+  return values.map((v, i) =>
+    (i / (values.length - 1) * (CH.x1 - CH.x0) + CH.x0) + "," +
+    (CH.y1 - (v - min) / span * (CH.y1 - CH.y0))).join(" ");
+}
+
+function axisLabels(min, max, unit, dates, fmt) {
+  const f = fmt || (v => Math.round(v) + unit);
+  let s = `<text x="50" y="${CH.y0 + 5}" font-size="11" fill="#888" text-anchor="end">${f(max)}</text>
+           <text x="50" y="${CH.y1 + 3}" font-size="11" fill="#888" text-anchor="end">${f(min)}</text>`;
+  if (dates && dates.length > 1) {
+    s += `<text x="${CH.x0}" y="112" font-size="11" fill="#888">${dates[0]}</text>
+          <text x="${(CH.x0 + CH.x1) / 2}" y="112" font-size="11" fill="#888" text-anchor="middle">날짜 (일 단위)</text>
+          <text x="${CH.x1}" y="112" font-size="11" fill="#888" text-anchor="end">${dates[dates.length - 1]}</text>`;
+  } else {
+    s += `<text x="${(CH.x0 + CH.x1) / 2}" y="112" font-size="11" fill="#888" text-anchor="middle">기록 순서 (1일 = 1칸)</text>`;
+  }
+  return s;
+}
+
+function drawLine(svgId, values, color, opts) {
+  opts = opts || {};
+  const svg = document.getElementById(svgId);
+  svg.innerHTML = "";
+  if (!values || values.length < 2) return;
+  let min = Math.min(...values), max = Math.max(...values);
+  if (opts.refValue) { min = Math.min(min, opts.refValue); max = Math.max(max, opts.refValue); }
+  const span = (max - min) || 1;
+
+  let inner = axisLabels(min, max, opts.unit || "", opts.dates);
+  if (opts.refValue) {  // 정상군 평균 기준선 (점선)
+    const ry = CH.y1 - (opts.refValue - min) / span * (CH.y1 - CH.y0);
+    inner += `<line x1="${CH.x0}" y1="${ry}" x2="${CH.x1}" y2="${ry}" stroke="#999" stroke-width="1.5" stroke-dasharray="6 4"/>
+              <text x="${CH.x1}" y="${ry - 4}" font-size="10" fill="#777" text-anchor="end">정상군 평균 ${opts.refValue}${opts.unit || ""}</text>`;
+  }
+  inner += `<polyline points="${xyPoints(values, min, span)}" fill="none" stroke="${color}" stroke-width="2"/>`;
+  svg.innerHTML = inner;
+}
+
+// 취침·기상 시각 차트 — y축이 "시각"이라 별도 라벨 형식(24 넘으면 다음날)을 쓴다
+function fmtHour(h) {
+  const hh = Math.round(h) % 24;
+  return (h >= 24 ? "익일 " : "") + hh + "시";
+}
+
+function drawBedtimeChart(svgId, bedtimes, wakes, dates) {
+  const svg = document.getElementById(svgId);
+  svg.innerHTML = "";
+  const all = bedtimes.concat(wakes).filter(v => v !== null);
+  if (all.length < 4) return;
+  const min = Math.min(...all), max = Math.max(...all), span = (max - min) || 1;
+
+  let inner = axisLabels(min, max, "", dates, fmtHour);
+  const mk = (vals, color) => {
+    const clean = vals.map(v => v === null ? null : v);
+    // null(결측일)은 선을 끊고 넘어간다
+    let seg = [], out = "";
+    clean.forEach((v, i) => {
+      if (v === null) { if (seg.length > 1) out += `<polyline points="${seg.join(" ")}" fill="none" stroke="${color}" stroke-width="2"/>`; seg = []; return; }
+      seg.push((i / (clean.length - 1) * (CH.x1 - CH.x0) + CH.x0) + "," + (CH.y1 - (v - min) / span * (CH.y1 - CH.y0)));
+    });
+    if (seg.length > 1) out += `<polyline points="${seg.join(" ")}" fill="none" stroke="${color}" stroke-width="2"/>`;
+    return out;
+  };
+  inner += mk(bedtimes, "#C44E52") + mk(wakes, "#55A868");
+  svg.innerHTML = inner;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+{
+  "comparison": "CN vs MCI v2 (Dem excluded, + time-series features)",
+  "n_cn": 111,
+  "n_mci": 51,
+  "n_features_total": 46,
+  "performance": {
+    "accuracy": {
+      "mean": 0.5716,
+      "std": 0.075
+    },
+    "baseline_accuracy": {
+      "mean": 0.6852,
+      "std": 0.0101
+    },
+    "mci_recall": {
+      "mean": 0.2055,
+      "std": 0.1174
+    },
+    "mci_precision": {
+      "mean": 0.2727,
+      "std": 0.14
+    }
+  },
+  "chosen_k_distribution": {
+    "10": 9,
+    "5": 9,
+    "15": 8,
+    "20": 4,
+    "30": 4,
+    "8": 15,
+    "50": 1
+  },
+  "feature_selection_frequency": {
+    "weekday_weekend_steps_diff": 0.98,
+    "activity_low_std": 0.88,
+    "sleep_efficiency_mean": 0.64,
+    "steps_trend_slope": 0.6,
+    "sleep_light_std": 0.56,
+    "activity_score_std": 0.56,
+    "sleep_restless_std": 0.56,
+    "steps_autocorr_lag1": 0.46,
+    "sleep_score_mean": 0.44,
+    "activity_inactive_mean": 0.4,
+    "sleep_deep_std": 0.38,
+    "sleep_hr_average_std": 0.36,
+    "sleep_light_mean": 0.34,
+    "activity_inactive_std": 0.32,
+    "activity_high_std": 0.32,
+    "activity_total_std": 0.32,
+    "activity_score_mean": 0.28,
+    "bedtime_irregularity": 0.26,
+    "day_count": 0.26,
+    "sleep_onset_latency_std": 0.26,
+    "activity_total_mean": 0.24,
+    "sleep_rem_std": 0.24,
+    "sleep_total_std": 0.24,
+    "sleep_deep_mean": 0.22,
+    "sleep_onset_latency_mean": 0.18,
+    "sleep_rem_mean": 0.18,
+    "activity_medium_std": 0.18,
+    "sleep_efficiency_autocorr_lag1": 0.16,
+    "sleep_hr_average_mean": 0.16,
+    "activity_steps_std": 0.14,
+    "sleep_efficiency_trend_slope": 0.14,
+    "sleep_restless_mean": 0.14,
+    "wake_irregularity": 0.14,
+    "activity_high_mean": 0.12,
+    "activity_steps_mean": 0.1,
+    "sleep_total_mean": 0.1,
+    "sleep_score_std": 0.08,
+    "activity_low_mean": 0.08,
+    "sleep_efficiency_std": 0.08,
+    "steps_cv": 0.08,
+    "activity_cal_total_mean": 0.06,
+    "activity_medium_mean": 0.04,
+    "activity_cal_total_std": 0.04,
+    "activity_composition_shift": 0.04,
+    "activity_average_met_mean": 0.04,
+    "activity_average_met_std": 0.02
+  },
+  "new_features_in_top15": [
+    "weekday_weekend_steps_diff",
+    "steps_trend_slope",
+    "steps_autocorr_lag1"
+  ]
+}

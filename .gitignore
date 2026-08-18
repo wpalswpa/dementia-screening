@@ -11,6 +11,10 @@ __pycache__/
 service/service.log
 submission_output/
 
+# 서비스 적재 DB — 업로드된 개인 생활기록이 담기므로 절대 커밋하지 말 것
+data/service.db
+data/processed/model_cn_ci_backup.pkl
+
 # 임시 파일
 ~$*
 *.tmp

@@ -19,6 +19,8 @@ import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, Response
 
+from service import storage
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "data", "processed", "model_cn_ci.pkl")
 FEATURE_TABLE_PATH = os.path.join(BASE_DIR, "data", "processed", "feature_table.csv")
@@ -61,6 +63,7 @@ def feature_unit(feature_name):
     return BASE_UNITS.get(base, ("", 1))
 
 app = FastAPI(title="치매 위험 조기 스크리닝 (찾아조)", docs_url="/docs")
+storage.init_db()  # 업로드 적재 DB(SQLite) 준비 — 없으면 생성
 
 
 def load_model_and_reference():
@@ -257,7 +260,15 @@ async def predict(file: UploadFile = File(...)):
             "deviation_sigma": round(abs_z, 1),
         })
 
+    # 업로드 자동 적재 — 상용화 데이터 루프의 1단계. 적재가 실패해도 예측 응답은 정상 반환한다.
+    try:
+        upload_id = storage.save_upload(valid, len(valid), round(proba_ci, 3),
+                                        "위험군 추정" if is_risk else "위험 신호 없음")
+    except Exception:
+        upload_id = None
+
     return {
+        "upload_id": upload_id,                               # 적재된 기록의 익명 ID (검진 결과 입력 시 사용)
         "valid_days": int(len(valid)),
         "risk_score": round(proba_ci, 3),                     # 0~1, 참고용 점수
         "risk_threshold": 0.5,                                # 이 값 이상이면 위험군 추정 (화면 기준선용)
@@ -295,6 +306,24 @@ async def predict(file: UploadFile = File(...)):
         "disclaimer": "본 결과는 의료 진단이 아닌 참고용 스크리닝입니다. "
                       "학습 데이터의 표본이 작아(174명, 치매 확진 12명) 결과 해석에 주의가 필요합니다.",
     }
+
+
+@app.post("/uploads/{upload_id}/label")
+def label_upload(upload_id: str, diagnosis: str):
+    """검진 확진 결과(CN/MCI/Dem)를 업로드 기록에 연결한다 — 기관(치매안심센터·병원) 연계용.
+    라벨이 쌓이면 model/06_retrain_from_uploads.py 로 모델을 재학습할 수 있다."""
+    if diagnosis not in ("CN", "MCI", "Dem"):
+        raise HTTPException(400, "diagnosis는 CN(정상)/MCI(경도인지장애)/Dem(치매) 중 하나여야 합니다.")
+    if not storage.set_label(upload_id, diagnosis):
+        raise HTTPException(404, f"업로드 기록을 찾을 수 없습니다: {upload_id}")
+    return {"upload_id": upload_id, "diagnosis": diagnosis, "status": "라벨 저장 완료",
+            "stats": storage.stats()}
+
+
+@app.get("/uploads/stats")
+def upload_stats():
+    """적재 현황 — 업로드 몇 건, 라벨 몇 건 쌓였는지 (모니터링·시연용)."""
+    return storage.stats()
 
 
 if __name__ == "__main__":

@@ -20,7 +20,9 @@
 핵심 발견: 활동량 "평균"보다 활동·수면 패턴의 "불규칙함"이 위험 신호
 한계     : 경도인지장애 "단독" 조기 신호는 못 찾음(Q5) — 그래서 주장 범위를
           "위험군(통합) 스크리닝"으로 한정. 재현율 수치는 통계적으로 미확정(p=0.132).
-서비스   : CSV 업로드 → 위험 점수 + 근거 + 치매안심센터 안내 (FastAPI, 구현 완료)
+서비스   : CSV 업로드 → 위험 점수 + 근거(색상 판정) + 치매안심센터 지도 안내 (FastAPI)
+확장     : 업로드 자동 적재(DB) → 검진 결과 연결 → 재학습 파이프라인까지 구현 —
+          "174명이라는 한계는 서비스가 돌수록 스스로 풀리는 구조"
 ```
 
 ## 전체 흐름
@@ -121,7 +123,8 @@ Alzheimer/
 | 서비스 | FastAPI 0.141, uvicorn 0.52 | `service/` — 모델 pkl 로드, CSV 업로드 예측 API + 데모 화면 |
 | 외부 데이터 연동 | 공공데이터포털 표준데이터 엔드포인트 (표준 라이브러리 urllib) | 「전국치매센터표준데이터」 317곳 — serviceKey 없이 공개 다운로드 경로 사용 |
 | 지도 | Leaflet 1.9 + OpenStreetMap 타일 (CDN) | 가까운 센터 지도 표시 — 오프라인이면 지도만 생략되고 목록은 유지 |
-| DB (선택) | Oracle + python-oracledb | `database/` — 센터 데이터 적재 스크립트, 시연 기본 경로는 CSV |
+| 적재 DB | SQLite (파이썬 내장 sqlite3) | `service/storage.py` — 업로드 자동 적재 + 라벨 관리, 별도 설치 불필요 |
+| DB (선택) | Oracle + python-oracledb | `database/` — 센터 데이터 적재 스크립트, 시연 기본 경로는 CSV/SQLite |
 | 직렬화 | pickle(모델 저장), json(지표·리포트 저장) | 표준 라이브러리 |
 | 개발 환경 | Windows, PowerShell, venv | |
 | 데이터 규모 | 174명 × 일 단위 기록(정제 후 사람당 28~118일, 평균 66일) → 사람 단위 피처 44~50개 | 표 형식 데이터라 GPU·딥러닝 프레임워크 불필요 |
@@ -150,6 +153,8 @@ python model\04_permutation_test.py                   6단계: Q6 검증 (약 5~
 
 python service\fetch_centers.py                       (선택) 치매안심센터 데이터 최신으로 갱신
 uvicorn service.main:app --host 127.0.0.1 --port 8002 7단계: 서비스 실행 → http://127.0.0.1:8002 (터미널 실행법은 7단계 참고)
+
+python model\06_retrain_from_uploads.py               8단계: 적재 데이터 재학습 (확진 라벨 10건 이상 쌓였을 때)
 ```
 
 ---
@@ -455,7 +460,8 @@ INFO:     Application startup complete.
 - [`data/processed/feature_table.csv`](../data/processed/feature_table.csv) — 전처리된 사람 단위 피처셋
 - [`data/processed/model_cn_ci.pkl`](../data/processed/model_cn_ci.pkl) — 학습된 스크리닝 모델 (CN vs CI)
 - [`reports/`](../reports/) — 모델 평가 지표(json) + 그래프(figures/), Q5·Q6 검증 결과 포함
-- [`service/`](../service/) — FastAPI 스크리닝 서비스 (구현·시연 검증 완료)
+- [`service/`](../service/) — FastAPI 스크리닝 서비스 + 업로드 적재·라벨 관리 (구현·시연 검증 완료)
+- [`model/06_retrain_from_uploads.py`](../model/06_retrain_from_uploads.py) — 적재 데이터 재학습 파이프라인
 - [`소스코드.py`](../소스코드.py) — 전체 분석 파이프라인 단일 파일 (제출용)
 - [`발표_예상질의응답.md`](발표_예상질의응답.md) — 발표 Q&A 대비 문서
-- 최종 발표자료 (작성 예정)
+- 발표자료_최종본.pptx — 최종 발표자료

@@ -18,3 +18,6 @@ data/processed/model_cn_ci_backup.pkl
 # 임시 파일
 ~$*
 *.tmp
+
+# Oracle 접속 정보 (비밀번호 포함) — database.example.py를 복사해 database.py로 만들 것
+database/database.py

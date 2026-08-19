@@ -79,10 +79,12 @@ Alzheimer/
 │   ├── data/dementia_centers.csv            연동 결과 캐시 (서비스가 읽는 파일, 재실행으로 갱신)
 │   └── static/index.html                    데모 화면 (업로드, 게이지, 근거 비교, 추이, 센터 지도)
 │
-├── database/                              (선택) Oracle 적재 — 외부데이터→DB 파이프라인 시연용
-│   ├── 01_create_centers_table.sql          TBL_DEMENTIA_CENTER 테이블·시퀀스 생성
+├── database/                              Oracle 적재 — 로컬 XE 11.2에 실제 적재 완료 (317건)
+│   ├── database.py                          접속 정보 (localhost XE, 계정은 본인 환경에 맞게 수정)
+│   ├── 00_setup_and_load.py                 러너 — 테이블 생성→적재→검증 한 번에 실행
+│   ├── 01_create_centers_table.sql          TBL_DEMENTIA_CENTER 테이블·시퀀스 생성 (CHAR 단위 길이)
 │   ├── 02_load_centers.py                   센터 CSV → Oracle INSERT (oracledb 필요)
-│   └── 03_select_centers.sql                적재 검증 쿼리
+│   └── 03_select_centers.sql                적재 검증 쿼리 (11g 호환)
 │
 ├── intro/                                 문제인식 시각화 최종 결과물 (PNG 11장 + 결과 해석 md)
 │

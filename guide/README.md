@@ -49,7 +49,7 @@
 ```text
 Alzheimer/
 ├── 소스코드.py                              제출용 단일 파일 — 1~6단계(Q1~Q5) 전체를 한 파일로 재현
-├── 발표자료_최종본_v5.pptx                      최종 발표자료
+├── 발표자료_최종본_v6.pptx                      최종 발표자료
 ├── requirements.txt
 │
 ├── raw_data/
@@ -479,4 +479,4 @@ INFO:     Application startup complete.
 - [`model/06_retrain_from_uploads.py`](../model/06_retrain_from_uploads.py) — 적재 데이터 재학습 파이프라인
 - [`소스코드.py`](../소스코드.py) — 전체 분석 파이프라인 단일 파일 (제출용)
 - [`발표_예상질의응답.md`](발표_예상질의응답.md) — 발표 Q&A 대비 문서
-- 발표자료_최종본_v5.pptx — 최종 발표자료
+- 발표자료_최종본_v6.pptx — 최종 발표자료

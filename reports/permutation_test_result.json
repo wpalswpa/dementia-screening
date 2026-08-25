@@ -1,0 +1,27 @@
+{
+  "n_permutations": 500,
+  "features_used": [
+    "activity_low_std",
+    "sleep_restless_std",
+    "sleep_light_mean",
+    "activity_total_std",
+    "activity_inactive_mean",
+    "activity_score_std",
+    "sleep_restless_mean",
+    "activity_high_mean",
+    "sleep_efficiency_mean",
+    "activity_high_std"
+  ],
+  "observed": {
+    "accuracy": 0.6282,
+    "ci_recall": 0.547
+  },
+  "p_value": {
+    "accuracy": 0.006,
+    "ci_recall": 0.1317
+  },
+  "significant_at_0.05": {
+    "accuracy": true,
+    "ci_recall": false
+  }
+}

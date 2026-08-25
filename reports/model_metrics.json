@@ -1,0 +1,90 @@
+{
+  "n_people": 174,
+  "diag_nm_counts": {
+    "CN": 111,
+    "MCI": 51,
+    "Dem": 12
+  },
+  "diag2class_counts": {
+    "CN": 111,
+    "CI": 63
+  },
+  "model": "LogisticRegression(class_weight='balanced', StandardScaler 포함) — 피처 중요도 산출용 RandomForest는 별도로 씀",
+  "cv_setting": "RepeatedStratifiedKFold(5-fold x 10 repeats), 매 fold마다 학습 데이터로만 상위 10개 피처 선택 후 평가 데이터로 검증",
+  "performance": {
+    "accuracy": {
+      "mean": 0.6016,
+      "std": 0.0761
+    },
+    "baseline_accuracy": {
+      "mean": 0.638,
+      "std": 0.0121
+    },
+    "ci_recall": {
+      "mean": 0.5268,
+      "std": 0.123
+    },
+    "ci_precision": {
+      "mean": 0.4605,
+      "std": 0.0893
+    },
+    "roc_auc": {
+      "mean": 0.6008,
+      "std": 0.0819
+    }
+  },
+  "selected_features": {
+    "activity_low_std": 1.0,
+    "sleep_restless_std": 0.96,
+    "sleep_light_mean": 0.82,
+    "activity_total_std": 0.62,
+    "activity_inactive_mean": 0.6,
+    "activity_score_std": 0.6,
+    "sleep_restless_mean": 0.54,
+    "activity_high_mean": 0.5,
+    "sleep_efficiency_mean": 0.48,
+    "activity_high_std": 0.48
+  },
+  "average_importance_all_features": {
+    "activity_steps_mean": 0.01882,
+    "activity_steps_std": 0.02135,
+    "activity_score_mean": 0.02259,
+    "activity_score_std": 0.0315,
+    "activity_total_mean": 0.02276,
+    "activity_total_std": 0.03019,
+    "activity_high_mean": 0.02876,
+    "activity_high_std": 0.02801,
+    "activity_medium_mean": 0.02076,
+    "activity_medium_std": 0.02548,
+    "activity_low_mean": 0.02118,
+    "activity_low_std": 0.04629,
+    "activity_inactive_mean": 0.03095,
+    "activity_inactive_std": 0.02439,
+    "activity_cal_total_mean": 0.01668,
+    "activity_cal_total_std": 0.0187,
+    "activity_average_met_mean": 0.01877,
+    "activity_average_met_std": 0.01857,
+    "sleep_score_mean": 0.02564,
+    "sleep_score_std": 0.01812,
+    "sleep_efficiency_mean": 0.0296,
+    "sleep_efficiency_std": 0.02135,
+    "sleep_total_mean": 0.02479,
+    "sleep_total_std": 0.01966,
+    "sleep_deep_mean": 0.02701,
+    "sleep_deep_std": 0.02282,
+    "sleep_light_mean": 0.03473,
+    "sleep_light_std": 0.02724,
+    "sleep_rem_mean": 0.02249,
+    "sleep_rem_std": 0.02215,
+    "sleep_onset_latency_mean": 0.02022,
+    "sleep_onset_latency_std": 0.01998,
+    "sleep_restless_mean": 0.02942,
+    "sleep_restless_std": 0.04468,
+    "sleep_hr_average_mean": 0.02479,
+    "sleep_hr_average_std": 0.02625,
+    "bedtime_irregularity": 0.02075,
+    "wake_irregularity": 0.02245,
+    "day_count": 0.02716,
+    "steps_cv": 0.02294
+  }
+}

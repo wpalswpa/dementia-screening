@@ -1,0 +1,70 @@
+{
+  "comparison": "CN vs MCI (Dem excluded)",
+  "n_cn": 111,
+  "n_mci": 51,
+  "nested_cv": "outer 5-fold x 10 repeats, inner 4-fold",
+  "performance": {
+    "accuracy": {
+      "mean": 0.553,
+      "std": 0.0868
+    },
+    "baseline_accuracy": {
+      "mean": 0.6852,
+      "std": 0.0101
+    },
+    "mci_recall": {
+      "mean": 0.2247,
+      "std": 0.1574
+    },
+    "mci_precision": {
+      "mean": 0.2525,
+      "std": 0.1558
+    }
+  },
+  "chosen_k_distribution": {
+    "15": 9,
+    "5": 13,
+    "10": 9,
+    "8": 13,
+    "20": 5,
+    "30": 1
+  },
+  "feature_selection_frequency": {
+    "activity_low_std": 0.88,
+    "sleep_restless_std": 0.8,
+    "sleep_efficiency_mean": 0.72,
+    "activity_score_std": 0.7,
+    "day_count": 0.62,
+    "activity_inactive_std": 0.52,
+    "activity_total_std": 0.5,
+    "sleep_deep_std": 0.48,
+    "activity_medium_std": 0.44,
+    "sleep_light_std": 0.4,
+    "sleep_hr_average_std": 0.38,
+    "sleep_light_mean": 0.38,
+    "activity_inactive_mean": 0.36,
+    "sleep_rem_mean": 0.32,
+    "sleep_score_mean": 0.28,
+    "sleep_hr_average_mean": 0.28,
+    "sleep_deep_mean": 0.28,
+    "sleep_restless_mean": 0.28,
+    "sleep_onset_latency_std": 0.22,
+    "sleep_onset_latency_mean": 0.18,
+    "sleep_total_std": 0.18,
+    "activity_high_std": 0.16,
+    "activity_high_mean": 0.14,
+    "steps_cv": 0.12,
+    "sleep_total_mean": 0.1,
+    "activity_steps_std": 0.1,
+    "wake_irregularity": 0.1,
+    "activity_total_mean": 0.08,
+    "sleep_efficiency_std": 0.08,
+    "bedtime_irregularity": 0.06,
+    "sleep_score_std": 0.06,
+    "activity_average_met_std": 0.06,
+    "sleep_rem_std": 0.06,
+    "activity_average_met_mean": 0.06,
+    "activity_low_mean": 0.06,
+    "activity_cal_total_mean": 0.04
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "base_44_features": {
+    "accuracy": {
+      "mean": 0.5529,
+      "std": 0.0931
+    },
+    "baseline_accuracy": {
+      "mean": 0.6852,
+      "std": 0.0101
+    },
+    "mci_recall": {
+      "mean": 0.5075,
+      "std": 0.1639
+    },
+    "roc_auc": {
+      "mean": 0.523,
+      "std": 0.1108
+    }
+  },
+  "v2_50_features": {
+    "accuracy": {
+      "mean": 0.541,
+      "std": 0.0993
+    },
+    "baseline_accuracy": {
+      "mean": 0.6852,
+      "std": 0.0101
+    },
+    "mci_recall": {
+      "mean": 0.488,
+      "std": 0.1824
+    },
+    "roc_auc": {
+      "mean": 0.5357,
+      "std": 0.1247
+    }
+  }
+}

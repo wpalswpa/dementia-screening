@@ -1,0 +1,23 @@
+# ── AI Hub 원본 데이터 — 이용약관상 재배포 금지, 절대 커밋하지 말 것 ──
+raw_data/
+
+# 원본에서 파생된 개인 단위 데이터도 올리지 않는다 (참가자별 생활 기록 포함)
+data/processed/*.csv
+
+# 실행 환경/캐시
+venv/
+__pycache__/
+*.pyc
+service/service.log
+submission_output/
+
+# 서비스 적재 DB — 업로드된 개인 생활기록이 담기므로 절대 커밋하지 말 것
+data/service.db
+data/processed/model_cn_ci_backup.pkl
+
+# 임시 파일
+~$*
+*.tmp
+
+# Oracle 접속 정보 (비밀번호 포함) — database.example.py를 복사해 database.py로 만들 것
+database/database.py

@@ -37,7 +37,7 @@ AI Hub "치매 고위험군 웨어러블 라이프로그" 데이터(174명 — �
 실행 방법
 ---------
     pip install pandas numpy scikit-learn matplotlib
-    python 소스코드.py
+    python pipeline.py
 
 이 스크립트와 같은 폴더에 raw_data/01_aihub_wearable/ 원본 데이터가 있어야 한다.
 결과물은 원본 프로젝트 결과와 섞이지 않도록 submission_output/data/, submission_output/reports/

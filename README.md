@@ -20,7 +20,7 @@
 ```bash
 pip install -r requirements.txt
 # 데이터 준비: AI Hub에서 "치매 고위험군 웨어러블 라이프로그" 신청 후 raw_data/01_aihub_wearable/에 배치
-python 소스코드.py                                     # 전체 분석 파이프라인 (전처리→모델→검증)
+python pipeline.py                                     # 전체 분석 파이프라인 (전처리→모델→검증)
 uvicorn service.main:app --host 127.0.0.1 --port 8002  # 웹 서비스 → http://127.0.0.1:8002
 ```
 
